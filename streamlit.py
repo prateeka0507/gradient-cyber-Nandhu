@@ -169,11 +169,7 @@ st.title("🤖 Gradient Cyber Bot")
 
 # Initialize clients
 pc = Pinecone(api_key=PINECONE_API_KEY)
-try:
-    index = pc.Index(INDEX_NAME)
-except Exception as e:
-    st.sidebar.error(f"Error connecting to index: {str(e)}")
-    st.stop()
+
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Try to initialize the index, handle potential errors
