@@ -4,11 +4,15 @@ from PyPDF2 import PdfReader
 from openai import OpenAI
 import io
 import time
-from langchain_openai import ChatOpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
-from langchain_community.vectorstores import Pinecone as LangchainPinecone
-from langchain_community.callbacks import StreamlitCallbackHandler
+from langchain.vectorstores import Pinecone as LangchainPinecone
+from langchain.callbacks import StreamlitCallbackHandler
 import os
+from langchain_community.vectorstores import Pinecone
+from langchain_openai import OpenAIEmbeddings
+from langchain.chains import VectorDBQA
+
 # Retrieve sensitive information from environment variables
 PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
@@ -178,15 +182,15 @@ except Exception as e:
     st.stop()
 
 # Initialize LangChain components
-vectorstore = LangchainPinecone(index, lambda x: x, "text")
+embeddings = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
+vectorstore = Pinecone(index, embeddings.embed_query, "text")
 llm = ChatOpenAI(temperature=0.3, model_name="gpt-4o", openai_api_key=OPENAI_API_KEY)
-qa_chain = RetrievalQA.from_chain_type(
+qa_chain = VectorDBQA.from_chain_type(
     llm=llm,
     chain_type="stuff",
-    retriever=vectorstore.as_retriever(search_kwargs={"k": 30}),
-    return_source_documents=True,
+    vectorstore=vectorstore,
+    return_source_documents=True
 )
-
 def extract_text_from_pdf(pdf_file):
     pdf_reader = PdfReader(pdf_file)
     text = ""
@@ -256,6 +260,7 @@ def format_answer(answer, sources):
         model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.3
+
     )
     return response.choices[0].message.content
 
@@ -272,7 +277,6 @@ def answer_question(question):
         return formatted_answer
     except Exception as e:
         return f"Error: {str(e)}"
-
 def format_conversation_history(history):
     prompt = f"""
     Summarize and format the following conversation history in an engaging and easy-to-read manner.
