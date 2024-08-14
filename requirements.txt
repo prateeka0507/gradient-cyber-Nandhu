@@ -2,4 +2,6 @@ streamlit
 pinecone-client
 PyPDF2
 openai
-langchain
+langchain==0.1.0
+langchain-community==0.0.12
+langchain-openai==0.0.2
