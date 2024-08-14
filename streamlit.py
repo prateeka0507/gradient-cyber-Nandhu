@@ -4,12 +4,11 @@ from PyPDF2 import PdfReader
 from openai import OpenAI
 import io
 import time
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.chains import RetrievalQA
-from langchain.vectorstores import Pinecone as LangchainPinecone
-from langchain.callbacks import StreamlitCallbackHandler
+from langchain_community.vectorstores import Pinecone as LangchainPinecone
+from langchain_community.callbacks import StreamlitCallbackHandler
 import os
-
 # Retrieve sensitive information from environment variables
 PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
